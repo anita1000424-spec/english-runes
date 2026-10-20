@@ -1,0 +1,166 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#100d18">
+<title>深淵盧恩・英文輸入器</title>
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;padding:24px 16px;min-height:100vh;
+  background:radial-gradient(ellipse at top,#302044,#100d18 65%);
+  color:#eee5ff;font-family:Arial,sans-serif
+}
+main{max-width:680px;margin:auto}
+h1{text-align:center;color:#d0adff;font-size:clamp(26px,6vw,38px)}
+.sub{text-align:center;color:#b9a8d0;line-height:1.8}
+.runes{text-align:center;font-size:25px;letter-spacing:8px;color:#a98bda}
+.panel{
+  margin:20px 0;padding:18px;border:1px solid #59446f;
+  border-radius:16px;background:#1b1726
+}
+label{display:block;margin-bottom:10px;font-weight:bold;color:#d8c4f5}
+textarea{
+  width:100%;min-height:145px;padding:14px;
+  background:#100d18;color:#fff;border:1px solid #665080;
+  border-radius:10px;font-size:18px;line-height:1.8;resize:vertical
+}
+button{
+  padding:12px 15px;border:1px solid #8b6caf;border-radius:10px;
+  background:#382849;color:white;font-size:15px;cursor:pointer
+}
+button:active{background:#624582}
+.buttons{display:flex;flex-wrap:wrap;gap:9px;margin-top:13px}
+#output{
+  min-height:110px;white-space:pre-wrap;overflow-wrap:anywhere;
+  font-size:24px;line-height:1.9;color:#e4d1ff
+}
+.note{font-size:13px;line-height:1.7;color:#b8a9c8}
+footer{text-align:center;color:#847494;font-size:12px;margin:28px 0}
+</style>
+</head>
+<body>
+<main>
+  <div class="runes">ᚠ ᚢ ᚦ ᚨ ᚱ</div>
+  <h1>☾ 深淵盧恩輸入器 ☽</h1>
+  <p class="sub">ENGLISH ↔ ABYSSAL RUNES<br>將英文轉換成神祕符號</p>
+
+  <section class="panel">
+    <label for="mode">轉換模式</label>
+    <select id="mode" style="width:100%;padding:12px;border-radius:9px;background:#100d18;color:#fff;border:1px solid #665080;font-size:16px">
+      <option value="encode">英文 → 深淵符文</option>
+      <option value="decode">深淵符文 → 英文</option>
+    </select>
+  </section>
+
+  <section class="panel">
+    <label for="source" id="sourceLabel">輸入英文</label>
+    <textarea id="source" placeholder="Type English here..."></textarea>
+    <div class="buttons">
+      <button id="convert">轉換</button>
+      <button id="copy">複製結果</button>
+      <button id="clear">清空</button>
+    </div>
+  </section>
+
+  <section class="panel">
+    <label>轉換結果</label>
+    <div id="output">符文將顯示在這裡……</div>
+    <p id="status" class="note">每個英文字母都有固定的符號。</p>
+  </section>
+
+  <section class="panel">
+    <label>字母對照表</label>
+    <div id="alphabet" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(75px,1fr));gap:10px"></div>
+    <p class="note">這是一套自創符號密碼，不是古代語言的真正翻譯。</p>
+  </section>
+
+  <footer>ᚠ ᚢ ᚦ ᚨ ᚱ · ABYSSAL RUNES</footer>
+</main>
+
+<script>
+const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const glyphs = [
+  "ᚨ","ᛒ","ᚲ","ᛞ","ᛖ","ᚠ","ᚷ","ᚺ","ᛁ",
+  "ᛃ","ᚴ","ᛚ","ᛗ","ᚾ","ᛟ","ᛈ","ᛩ","ᚱ",
+  "ᛊ","ᛏ","ᚢ","ᚡ","ᚹ","ᛪ","ᛦ","ᛉ"
+];
+
+const encodeMap = {};
+const decodeMap = {};
+
+for(let i=0;i<letters.length;i++){
+  encodeMap[letters[i]]=glyphs[i];
+  decodeMap[glyphs[i]]=letters[i];
+}
+
+const source = document.getElementById("source");
+const output = document.getElementById("output");
+const mode = document.getElementById("mode");
+const status = document.getElementById("status");
+
+function convert(){
+  const text = source.value;
+  const isEncode = mode.value === "encode";
+  let result = "";
+
+  for(const ch of text){
+    if(isEncode){
+      const converted = encodeMap[ch.toUpperCase()];
+      if(converted){
+        result += ch === ch.toLowerCase()
+          ? converted.toLowerCase()
+          : converted;
+      }else{
+        result += ch;
+      }
+    }else{
+      const converted = decodeMap[ch.toUpperCase()];
+      if(converted){
+        result += ch === ch.toLowerCase()
+          ? converted.toLowerCase()
+          : converted;
+      }else{
+        result += ch;
+      }
+    }
+  }
+
+  output.textContent = result || "請先輸入文字……";
+  status.textContent = "轉換完成！空格、數字及標點符號會保留。";
+}
+
+function renderAlphabet(){
+  const area = document.getElementById("alphabet");
+  letters.split("").forEach((letter,i)=>{
+    const item = document.createElement("div");
+    item.style.cssText =
+      "padding:10px;text-align:center;background:#100d18;border-radius:9px;border:1px solid #40304f";
+    const top = document.createElement("div");
+    top.textContent = letter;
+    top.style.color = "#bca1e6";
+    const bottom = document.createElement("div");
+    bottom.textContent = glyphs[i];
+    bottom.style.cssText = "font-size:25px;margin-top:5px";
+    item.append(top,bottom);
+    area.appendChild(item);
+  });
+}
+
+mode.addEventListener("change",()=>{
+  document.getElementById("sourceLabel").textContent =
+    mode.value === "encode" ? "輸入英文" : "輸入深淵符文";
+  source.placeholder = mode.value === "encode"
+    ? "Type English here..."
+    : "在這裡貼上符文……";
+  output.textContent = "符文將顯示在這裡……";
+});
+
+document.getElementById("convert").addEventListener("click",convert);
+
+document.getElementById("clear").addEventListener("click",()=>{
+  source.value = "";
+  output.textContent = "符文將顯示在這裡……";
+  status.textContent = "已清空。
